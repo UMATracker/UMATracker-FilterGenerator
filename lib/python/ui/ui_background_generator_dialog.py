@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\ui_background_generator_dialog.ui'
+# Form implementation generated from reading ui file 'ui_background_generator_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.5
+# Created by: PyQt5 UI code generator 5.5.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -49,14 +49,6 @@ class Ui_BackgroundGeneratorDialog(object):
         self.label = QtWidgets.QLabel(self.groupBox)
         self.label.setObjectName("label")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label)
-        self.generateButton = QtWidgets.QPushButton(self.groupBox)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.generateButton.sizePolicy().hasHeightForWidth())
-        self.generateButton.setSizePolicy(sizePolicy)
-        self.generateButton.setObjectName("generateButton")
-        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.generateButton)
         self.strideSpinBox = QtWidgets.QSpinBox(self.groupBox)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -84,6 +76,20 @@ class Ui_BackgroundGeneratorDialog(object):
         self.setMinButton.setSizePolicy(sizePolicy)
         self.setMinButton.setObjectName("setMinButton")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.setMinButton)
+        self.label_2 = QtWidgets.QLabel(self.groupBox)
+        self.label_2.setObjectName("label_2")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_2)
+        self.generateButton = QtWidgets.QPushButton(self.groupBox)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.generateButton.sizePolicy().hasHeightForWidth())
+        self.generateButton.setSizePolicy(sizePolicy)
+        self.generateButton.setObjectName("generateButton")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.generateButton)
+        self.frameNumLabel = QtWidgets.QLabel(self.groupBox)
+        self.frameNumLabel.setObjectName("frameNumLabel")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.frameNumLabel)
         self.horizontalLayout_2.addWidget(self.groupBox)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -114,12 +120,11 @@ class Ui_BackgroundGeneratorDialog(object):
         _translate = QtCore.QCoreApplication.translate
         BackgroundGeneratorDialog.setWindowTitle(_translate("BackgroundGeneratorDialog", "Dialog"))
         self.groupBox.setTitle(_translate("BackgroundGeneratorDialog", "Options"))
-        self.label.setText(_translate("BackgroundGeneratorDialog", "Frame:"))
+        self.label.setText(_translate("BackgroundGeneratorDialog", "Frame Interval:"))
+        self.setMaxButton.setText(_translate("BackgroundGeneratorDialog", "Set End Point"))
+        self.setMinButton.setText(_translate("BackgroundGeneratorDialog", "Set Start Point"))
+        self.label_2.setText(_translate("BackgroundGeneratorDialog", "# of Frame used:"))
         self.generateButton.setText(_translate("BackgroundGeneratorDialog", "Generate"))
-        self.setMaxButton.setText(_translate("BackgroundGeneratorDialog", "Set Max"))
-        self.setMinButton.setText(_translate("BackgroundGeneratorDialog", "Set Min"))
+        self.frameNumLabel.setText(_translate("BackgroundGeneratorDialog", "0"))
 
-try:
-    from .video_playback_widget import VideoPlaybackWidget
-except ImportError:
-    from video_playback_widget import VideoPlaybackWidget
+from .video_playback_widget import VideoPlaybackWidget

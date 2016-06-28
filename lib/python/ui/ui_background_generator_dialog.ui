@@ -57,20 +57,7 @@
         <item row="3" column="0">
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Frame:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QPushButton" name="generateButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Generate</string>
+           <string>Frame Interval:</string>
           </property>
          </widget>
         </item>
@@ -102,7 +89,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Set Max</string>
+           <string>Set End Point</string>
           </property>
          </widget>
         </item>
@@ -115,7 +102,34 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Set Min</string>
+           <string>Set Start Point</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string># of Frame used:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QPushButton" name="generateButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Generate</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="frameNumLabel">
+          <property name="text">
+           <string>0</string>
           </property>
          </widget>
         </item>
@@ -127,7 +141,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="VideoPlaybackWidget" name="videoPlaybackWidget"/>
+      <widget class="VideoPlaybackWidget" name="videoPlaybackWidget" native="true"/>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">

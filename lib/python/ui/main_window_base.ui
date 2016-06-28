@@ -112,19 +112,19 @@
      <x>0</x>
      <y>0</y>
      <width>976</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
     <property name="title">
      <string>Files</string>
     </property>
-    <addaction name="actionSaveVideo"/>
+    <addaction name="actionOpenFilterData"/>
     <addaction name="actionOpenVideo"/>
     <addaction name="actionOpenImage"/>
     <addaction name="separator"/>
     <addaction name="actionSaveFilterData"/>
-    <addaction name="actionOpenFilterData"/>
+    <addaction name="actionSaveVideo"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -175,17 +175,17 @@
   </action>
   <action name="actionSaveFilterData">
    <property name="text">
-    <string>Save Filter Data</string>
+    <string>Save Filter</string>
    </property>
   </action>
   <action name="actionOpenFilterData">
    <property name="text">
-    <string>Open Filter Data</string>
+    <string>Open Filter</string>
    </property>
   </action>
   <action name="actionCreateBackground">
    <property name="text">
-    <string>Create</string>
+    <string>Create Background</string>
    </property>
   </action>
   <action name="actionEnable_Disable">
@@ -198,7 +198,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Resize</string>
+    <string>Resize Video</string>
    </property>
   </action>
   <action name="actionSaveVideo">

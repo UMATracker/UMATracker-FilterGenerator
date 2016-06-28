@@ -51,6 +51,16 @@ class BackgroundGeneratorDialog(Ui_BackgroundGeneratorDialog, QDialog):
 
         self.generateButton.pressed.connect(self.generateBackground)
 
+        self.strideSpinBox.valueChanged.connect(self.updateFrameNumLabel)
+        self.setMinButton.pressed.connect(self.updateFrameNumLabel)
+        self.setMaxButton.pressed.connect(self.updateFrameNumLabel)
+
+    def updateFrameNumLabel(self, i=None):
+        minFrame = self.videoPlaybackWidget.getMinRange()
+        maxFrame = self.videoPlaybackWidget.getMaxRange()
+        stride = self.strideSpinBox.value()
+        numFrames = int((maxFrame-minFrame)/stride)
+        self.frameNumLabel.setText(str(numFrames))
 
     def closeEvent(self,event):
         pass
