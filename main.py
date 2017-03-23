@@ -270,28 +270,57 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
 
     def saveFilterFile(self):
         self.blocklyEvaluationTimer.stop()
-        if self.filePath is not None:
-            candidateFilePath = os.path.splitext(self.filePath)[0] + '.filter'
-        else:
-            candidateFilePath = userDir
-        filePath, _ = QFileDialog.getSaveFileName(None, 'Save Filter File', candidateFilePath, "Filter files (*.filter)")
+        if self.filterCheck():
+            if self.filePath is not None:
+                candidateFilePath = os.path.splitext(self.filePath)[0] + '.filter'
+            else:
+                candidateFilePath = userDir
+            filePath, _ = QFileDialog.getSaveFileName(None, 'Save Filter File', candidateFilePath, "Filter files (*.filter)")
 
-        if len(filePath) is not 0:
-            logger.debug("Saving Filter file: {0}".format(filePath))
+            if len(filePath) is not 0:
+                logger.debug("Saving Filter file: {0}".format(filePath))
 
-            frame = self.blocklyWebView.page().mainFrame()
+                frame = self.blocklyWebView.page().mainFrame()
 
-            filterIO = FilterIO()
-            filterIO.setBlockXMLData(frame.evaluateJavaScript("Apps.getBlockData();"))
+                filterIO = FilterIO()
+                filterIO.setBlockXMLData(frame.evaluateJavaScript("Apps.getBlockData();"))
 
-            filterClassText = self.parseToClass(frame.evaluateJavaScript("Apps.getCodeFromWorkspace();"))
-            filterIO.setFilterCode(filterClassText)
+                filterClassText = self.parseToClass(frame.evaluateJavaScript("Apps.getCodeFromWorkspace();"))
+                filterIO.setFilterCode(filterClassText)
 
-            filterIO.setBackgroundImg(self.fgbg)
+                filterIO.setBackgroundImg(self.fgbg)
 
-            filterIO.save(filePath)
+                filterIO.save(filePath)
 
         self.blocklyEvaluationTimer.start()
+
+    def filterCheck(self):
+        is_binary = None
+        if len(self.im_output.shape)==3:
+            is_binary = False
+        else:
+            data = self.im_output.flatten()
+            is_binary = np.all(np.logical_or(data==0, data==255))
+
+        if is_binary:
+            return True
+        else:
+            msg = "Image is not binalized.\n" \
+                    + "For object tracking, you should make image binalized.\n" \
+                    + "Use 'BGRToGray' and 'Threshold' block.\n" \
+                    + "Are you sure you want to save the filter data?"
+            reply = QtWidgets.QMessageBox.question(
+                    self,
+                    'Warning',
+                    msg,
+                    QtWidgets.QMessageBox.Yes,
+                    QtWidgets.QMessageBox.No
+                    )
+
+            if reply == QtWidgets.QMessageBox.Yes:
+                return True
+            else:
+                return False
 
     def inputGraphicsViewResized(self, event=None):
         self.inputGraphicsView.fitInView(QtCore.QRectF(self.inputPixmap.rect()), QtCore.Qt.KeepAspectRatio)
