@@ -388,6 +388,16 @@ if self.fgbg is not None:
             if graphicsItem is not None:
                 if graphicsItem.isVisible() is False:
                     graphicsItem.show()
+
+                try:
+                    degree = int(parameters['degree'])
+                except:
+                    degree = 0
+
+                if degree > 2 and degree != graphicsItem.getDegree():
+                    height, width, dim = self.cv_img.shape
+                    array = [[x[0]*width, x[1]*height] for x in eval(parameters['array'])]
+                    graphicsItem.setPoints(array)
             else:
                 height, width, dim = self.cv_img.shape
                 array = [[x[0]*width, x[1]*height] for x in eval(parameters['array'])]

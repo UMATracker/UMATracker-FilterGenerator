@@ -26,13 +26,18 @@ class MovablePolygonVertex(QGraphicsObject):
 
         self.buttonList = []
         self.points = []
+        self.degree = 0
         self.setFocus(Qt.ActiveWindowFocusReason)
 
         self._boundingRect = QRectF()
         self._rect = QRectF()
 
+    def getDegree(self):
+        return self.degree
+
     def setPoints(self, ps):
         self.points.clear()
+        self.degree = len(ps)
         for point in ps:
             self.points.append(QPointF(*point))
         self.updateResizeHandles()
