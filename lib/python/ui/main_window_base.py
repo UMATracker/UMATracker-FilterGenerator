@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'main_window_base.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,13 +26,7 @@ class Ui_MainWindowBase(object):
         self.blockEditorBox.setObjectName("blockEditorBox")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.blockEditorBox)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.blocklyWebView = QtWebKitWidgets.QWebView(self.blockEditorBox)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.blocklyWebView.sizePolicy().hasHeightForWidth())
-        self.blocklyWebView.setSizePolicy(sizePolicy)
-        self.blocklyWebView.setAcceptDrops(False)
+        self.blocklyWebView = QtWebEngineWidgets.QWebEngineView(self.blockEditorBox)
         self.blocklyWebView.setUrl(QtCore.QUrl("about:blank"))
         self.blocklyWebView.setObjectName("blocklyWebView")
         self.verticalLayout.addWidget(self.blocklyWebView)
@@ -73,7 +67,7 @@ class Ui_MainWindowBase(object):
         self.horizontalLayout.addWidget(self.graphicsBox)
         MainWindowBase.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindowBase)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 976, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 976, 22))
         self.menubar.setObjectName("menubar")
         self.menuFiles = QtWidgets.QMenu(self.menubar)
         self.menuFiles.setObjectName("menuFiles")
@@ -147,5 +141,5 @@ class Ui_MainWindowBase(object):
         self.actionResize.setText(_translate("MainWindowBase", "Resize Video"))
         self.actionSaveVideo.setText(_translate("MainWindowBase", "Save Video"))
 
-from PyQt5 import QtWebKitWidgets
+from PyQt5 import QtWebEngineWidgets
 from .video_playback_widget import VideoPlaybackWidget

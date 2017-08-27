@@ -153,8 +153,8 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
                 ]
         parameters = {'array': '{0}'.format(array)}
         string = json.dumps({k: str(v) for k, v in parameters.items()})
-        webFrame = self.blocklyWebView.page().mainFrame()
-        webFrame.evaluateJavaScript("Apps.setValueToSelectedBlock({0});".format(string))
+        page = self.blocklyWebView.page()
+        page.runJavaScript("Apps.setValueToSelectedBlock({0});".format(string))
 
     def setArrayParameterToBlock(self, array):
         height, width, dim = self.cv_img.shape
@@ -162,8 +162,8 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
         array = [[x[0]/width, x[1]/height] for x in array]
         parameters = {'array': '{0}'.format(array)}
         string = json.dumps({k: str(v) for k, v in parameters.items()})
-        webFrame = self.blocklyWebView.page().mainFrame()
-        webFrame.evaluateJavaScript("Apps.setValueToSelectedBlock({0});".format(string))
+        page = self.blocklyWebView.page()
+        page.runJavaScript("Apps.setValueToSelectedBlock({0});".format(string))
 
     def createBackground(self, activated=False):
         if self.videoPlaybackWidget.isOpened():
@@ -249,8 +249,8 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
                 'Color': rgb,
                 }
         string = json.dumps(parameters)
-        webFrame = self.blocklyWebView.page().mainFrame()
-        webFrame.evaluateJavaScript("Apps.setValueToSelectedBlock({0});".format(string))
+        page = self.blocklyWebView.page()
+        page.runJavaScript("Apps.setValueToSelectedBlock({0});".format(string))
 
     def openFilterFile(self, activated=False, filePath = None):
         if filePath is None:
@@ -265,8 +265,8 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
             exec(filterIO.getFilterCode(), globals())
 
             blockXML = re.sub(r"[\n\r]",'', filterIO.getBlockXMLData())
-            frame = self.blocklyWebView.page().mainFrame()
-            frame.evaluateJavaScript("Apps.setBlockData('{0}');".format(blockXML))
+            page = self.blocklyWebView.page()
+            page.runJavaScript("Apps.setBlockData('{0}');".format(blockXML))
 
     def saveFilterFile(self):
         self.blocklyEvaluationTimer.stop()
@@ -280,17 +280,21 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
             if len(filePath) is not 0:
                 logger.debug("Saving Filter file: {0}".format(filePath))
 
-                frame = self.blocklyWebView.page().mainFrame()
+                page = self.blocklyWebView.page()
 
-                filterIO = FilterIO()
-                filterIO.setBlockXMLData(frame.evaluateJavaScript("Apps.getBlockData();"))
+                def callback(data):
+                    xmlData = data[0]
+                    filterClassText = data[1]
 
-                filterClassText = self.parseToClass(frame.evaluateJavaScript("Apps.getCodeFromWorkspace();"))
-                filterIO.setFilterCode(filterClassText)
+                    filterIO = FilterIO()
 
-                filterIO.setBackgroundImg(self.fgbg)
+                    filterIO.setBlockXMLData(xmlData)
+                    filterIO.setFilterCode(filterClassText)
+                    filterIO.setBackgroundImg(self.fgbg)
 
-                filterIO.save(filePath)
+                    filterIO.save(filePath)
+
+                page.runJavaScript("[{}, {}];".format("Apps.getBlockData()", "Apps.getCodeFromWorkspace()"), callback)
 
         self.blocklyEvaluationTimer.start()
 
@@ -365,61 +369,64 @@ if self.fgbg is not None:
         return generator.generate().format(input="im_input", output="im_output")
 
     def reflectSelectedBlockStateIntoUI(self):
-        webFrame = self.blocklyWebView.page().mainFrame()
+        def callback(data):
+            if data is None:
+                self.resetSceneAction(self.selectedBlockID)
+                self.selectedBlockID = None
+                return
 
-        data = webFrame.evaluateJavaScript("Apps.getBlockTypeFromSelectedBlock();")
-        if data is None:
-            self.resetSceneAction(self.selectedBlockID)
-            self.selectedBlockID = None
-            return
+            blockType = data['type']
+            blockID = data['id']
+            blockAttributes = data['attributes']
+            if self.selectedBlockID != blockID:
+                self.resetSceneAction(self.selectedBlockID)
+                self.selectedBlockID = blockID
 
-        blockType = data['type']
-        blockID = data['id']
-        blockAttributes = data['attributes']
-        if self.selectedBlockID != blockID:
-            self.resetSceneAction(self.selectedBlockID)
-            self.selectedBlockID = blockID
+            if 'regionSelector' in blockAttributes:
+                def regionSelectorCallback(parameters):
+                    graphicsItem = self.getGrphicsItemFromInputScene(blockID)
 
-        if 'regionSelector' in blockAttributes:
-            parameters = webFrame.evaluateJavaScript("Apps.getValueFromSelectedBlock();")
+                    if graphicsItem is not None:
+                        if graphicsItem.isVisible() is False:
+                            graphicsItem.show()
 
-            graphicsItem = self.getGrphicsItemFromInputScene(blockID)
+                        try:
+                            degree = int(parameters['degree'])
+                        except:
+                            degree = 0
 
-            if graphicsItem is not None:
-                if graphicsItem.isVisible() is False:
-                    graphicsItem.show()
+                        if degree > 2 and degree != graphicsItem.getDegree():
+                            height, width, dim = self.cv_img.shape
+                            array = [[x[0]*width, x[1]*height] for x in eval(parameters['array'])]
+                            graphicsItem.setPoints(array)
+                    else:
+                        height, width, dim = self.cv_img.shape
+                        array = [[x[0]*width, x[1]*height] for x in eval(parameters['array'])]
 
-                try:
-                    degree = int(parameters['degree'])
-                except:
-                    degree = 0
+                        if blockType == "rectRegionSelector":
+                            graphicsItem = ResizableRect()
+                        elif blockType == "ellipseRegionSelector":
+                            graphicsItem = ResizableEllipse()
+                        elif blockType == "polyRegionSelector":
+                            graphicsItem = MovablePolygon()
+                        self.inputScene.addItem(graphicsItem)
+                        graphicsItem.setPoints(array)
 
-                if degree > 2 and degree != graphicsItem.getDegree():
-                    height, width, dim = self.cv_img.shape
-                    array = [[x[0]*width, x[1]*height] for x in eval(parameters['array'])]
-                    graphicsItem.setPoints(array)
+                        graphicsItem.setObjectName(blockID)
+                        graphicsItem.geometryChange.connect(self.setArrayParameterToBlock)
+
+                    self.updateInputGraphicsView()
+
+                page = self.blocklyWebView.page()
+                page.runJavaScript("Apps.getValueFromSelectedBlock();", regionSelectorCallback)
+
+            elif 'colorSelector' in blockAttributes:
+                self.inputPixmapItem.mousePressEvent = self.inputPixmapItemClicked
             else:
-                height, width, dim = self.cv_img.shape
-                array = [[x[0]*width, x[1]*height] for x in eval(parameters['array'])]
+                self.inputPixmapItem.mousePressEvent = self.getPixmapItemClickedPos
 
-                if blockType == "rectRegionSelector":
-                    graphicsItem = ResizableRect()
-                elif blockType == "ellipseRegionSelector":
-                    graphicsItem = ResizableEllipse()
-                elif blockType == "polyRegionSelector":
-                    graphicsItem = MovablePolygon()
-                self.inputScene.addItem(graphicsItem)
-                graphicsItem.setPoints(array)
-
-                graphicsItem.setObjectName(blockID)
-                graphicsItem.geometryChange.connect(self.setArrayParameterToBlock)
-
-            self.updateInputGraphicsView()
-
-        elif 'colorSelector' in blockAttributes:
-            self.inputPixmapItem.mousePressEvent = self.inputPixmapItemClicked
-        else:
-            self.inputPixmapItem.mousePressEvent = self.getPixmapItemClickedPos
+        page = self.blocklyWebView.page()
+        page.runJavaScript("Apps.getBlockTypeFromSelectedBlock();", callback)
 
     def resetSceneAction(self, blockID):
         graphicsItem = self.getGrphicsItemFromInputScene(blockID)
@@ -445,58 +452,71 @@ if self.fgbg is not None:
         return None
 
     def evaluateSelectedBlock(self, update=True):
-        self.im_output = None
+        def callback(data):
+            if data is None:
+                return
+            self.im_output = None
 
-        frame = self.blocklyWebView.page().mainFrame()
+            text = data[0]
+            xmlText = data[2]
 
-        text = frame.evaluateJavaScript("Apps.getCodeFromSelectedBlock();")
-        self.reflectSelectedBlockStateIntoUI()
-        if text == "" or text is None:
-            text = frame.evaluateJavaScript("Apps.getCodeFromWorkspace();")
+            self.reflectSelectedBlockStateIntoUI()
+            if text == "" or text is None:
+                text = data[1]
 
-        if text is None:
-            return False
-
-        xmlText = frame.evaluateJavaScript("Apps.getBlockData();")
-
-        text = self.parseToClass(text)
-
-        logger.debug("Generated Code: {0}".format(text))
-
-        textHash = hashlib.md5(text.encode())
-        if self.filterClassHash != textHash:
-            self.filterClassHash = textHash
-            try:
-                exec(text, globals())
-                self.filter = filterOperation(self.cv_img)
-                self.filter.fgbg = self.fgbg
-            except Exception as e:
-                logger.debug("Block Evaluation Error: {0}".format(e))
+            if text is None:
                 return False
 
-        try:
-            self.im_output = self.filter.filterFunc(self.cv_img)
-        except Exception as e:
-            logger.debug("Filter execution Error: {0}".format(e))
-            return False
+            text = self.parseToClass(text)
 
-        if update:
-            self.outputScene.clear()
+            logger.debug("Generated Code: {0}".format(text))
+
+            textHash = hashlib.md5(text.encode())
+            if self.filterClassHash != textHash:
+                self.filterClassHash = textHash
+                try:
+                    exec(text, globals())
+                    self.filter = filterOperation(self.cv_img)
+                    self.filter.fgbg = self.fgbg
+                except Exception as e:
+                    logger.debug("Block Evaluation Error: {0}".format(e))
+                    return False
 
             try:
-                qimg = misc.cvMatToQImage(self.im_output)
-                self.outputPixmap = QPixmap.fromImage(qimg)
-            except:
-                pass
+                self.im_output = self.filter.filterFunc(self.cv_img)
+            except Exception as e:
+                logger.debug("Filter execution Error: {0}".format(e))
+                return False
 
-            rect = QtCore.QRectF(self.outputPixmap.rect())
-            self.outputScene.setSceneRect(rect)
+            if update:
+                self.outputScene.clear()
 
-            self.outputScene.addPixmap(self.outputPixmap)
+                try:
+                    qimg = misc.cvMatToQImage(self.im_output)
+                    self.outputPixmap = QPixmap.fromImage(qimg)
+                except:
+                    pass
 
-            self.outputGraphicsView.viewport().update()
-            self.outputGraphicsViewResized()
+                rect = QtCore.QRectF(self.outputPixmap.rect())
+                self.outputScene.setSceneRect(rect)
 
+                self.outputScene.addPixmap(self.outputPixmap)
+
+                self.outputGraphicsView.viewport().update()
+                self.outputGraphicsViewResized()
+
+            return True
+
+        page = self.blocklyWebView.page()
+        page.runJavaScript(
+                "[{},{},{}];".format(
+                    "Apps.getCodeFromSelectedBlock()",
+                    "Apps.getCodeFromWorkspace()",
+                    "Apps.getBlockData()"
+                    ),
+                callback)
+
+        # FIXME: ホントはコールバックの成功結果を返す必要がある
         return True
 
     def saveVideoFile(self, activated=False):
