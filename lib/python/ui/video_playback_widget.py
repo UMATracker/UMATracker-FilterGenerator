@@ -31,6 +31,7 @@ logger.setLevel(DEBUG)
 logger.addHandler(handler)
 
 import os
+import glob
 
 if getattr(sys, 'frozen', False):
     currentDirPath = sys._MEIPASS
@@ -63,8 +64,14 @@ if os.name == 'nt':
         pass
 elif os.name == 'posix':  # FIXME:Linuxだと落ちる．
     logger.debug("OS is MacOS")
-    for libfile in [os.path.join(currentDirPath, 'lib', 'libffms2.dylib'),
-                    r'/usr/local/Cellar/ffms2/2.21/lib/libffms2.dylib']:
+    ffms2_path_list = glob.glob(
+        '/usr/local/Cellar/ffms2/*/lib/libffms2.dylib'
+    )
+    ffms2_path_list.insert(
+        0,
+        os.path.join(currentDirPath, 'lib', 'libffms2.dylib')
+    )
+    for libfile in ffms2_path_list:
         if os.path.isfile(libfile):
             vs_core.std.LoadPlugin(libfile)
             break
