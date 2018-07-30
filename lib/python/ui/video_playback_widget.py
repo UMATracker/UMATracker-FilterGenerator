@@ -167,7 +167,12 @@ class VideoPlaybackWidget(QtWidgets.QWidget, Ui_VideoPlaybackWidget):
                 if isinstance(self.ret, list):
                     self.ret = self.ret[0]
 
-                self.ret = vs_core.resize.Lanczos(self.ret, format=vs.RGB24)
+                if self.ret.format.color_family == vs.ColorFamily.YUV:
+                    self.ret = vs_core.resize.Lanczos(
+                        self.ret,
+                        format=vs.RGB24,
+                        matrix_in_s='709'
+                    )
                 logger.debug(self.ret.format)
             except vs.Error:
                 return False
