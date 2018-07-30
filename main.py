@@ -82,6 +82,7 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
         self.filter = None
         self.selectedBlockID = None
         self.fgbg = None
+        self.isBlockEvalationOk = False
 
     def imgInit(self):
         self.cv_img = cv2.imread(os.path.join(sampleDataPath,"color_filter_test.png"))
@@ -233,6 +234,25 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
         self.inputGraphicsView.viewport().update()
         self.inputGraphicsViewResized()
 
+    def updateOutputGraphicsView(self):
+        self.outputScene.clear()
+
+        try:
+            qimg = misc.cvMatToQImage(self.im_output)
+            self.outputPixmap = QPixmap.fromImage(qimg)
+        except:
+            return False
+
+        rect = QtCore.QRectF(self.outputPixmap.rect())
+        self.outputScene.setSceneRect(rect)
+
+        self.outputScene.addPixmap(self.outputPixmap)
+
+        self.outputGraphicsView.viewport().update()
+        self.outputGraphicsViewResized()
+
+        return True
+
     def getPixmapItemClickedPos(self, event):
         pos = event.scenePos().toPoint()
         print(pos)
@@ -284,7 +304,7 @@ class Ui_MainWindow(QMainWindow, Ui_MainWindowBase):
 
                 def callback(data):
                     xmlData = data[0]
-                    filterClassText = data[1]
+                    filterClassText = self.parseToClass(data[1])
 
                     filterIO = FilterIO()
 
@@ -454,7 +474,9 @@ if self.fgbg is not None:
     def evaluateSelectedBlock(self, update=True):
         def callback(data):
             if data is None:
+                self.isBlockEvalationOk = False
                 return
+
             self.im_output = None
 
             text = data[0]
@@ -465,7 +487,8 @@ if self.fgbg is not None:
                 text = data[1]
 
             if text is None:
-                return False
+                self.isBlockEvalationOk = False
+                return
 
             text = self.parseToClass(text)
 
@@ -480,32 +503,21 @@ if self.fgbg is not None:
                     self.filter.fgbg = self.fgbg
                 except Exception as e:
                     logger.debug("Block Evaluation Error: {0}".format(e))
-                    return False
+                    self.isBlockEvalationOk = False
+                    return
 
             try:
                 self.im_output = self.filter.filterFunc(self.cv_img)
             except Exception as e:
                 logger.debug("Filter execution Error: {0}".format(e))
-                return False
+                self.isBlockEvalationOk = False
+                return
 
             if update:
-                self.outputScene.clear()
+                self.isBlockEvalationOk = self.updateOutputGraphicsView()
+                return
 
-                try:
-                    qimg = misc.cvMatToQImage(self.im_output)
-                    self.outputPixmap = QPixmap.fromImage(qimg)
-                except:
-                    pass
-
-                rect = QtCore.QRectF(self.outputPixmap.rect())
-                self.outputScene.setSceneRect(rect)
-
-                self.outputScene.addPixmap(self.outputPixmap)
-
-                self.outputGraphicsView.viewport().update()
-                self.outputGraphicsViewResized()
-
-            return True
+            self.isBlockEvalationOk = True
 
         page = self.blocklyWebView.page()
         page.runJavaScript(
@@ -516,13 +528,10 @@ if self.fgbg is not None:
                     ),
                 callback)
 
-        # FIXME: ホントはコールバックの成功結果を返す必要がある
-        return True
-
     def saveVideoFile(self, activated=False):
         self.blocklyEvaluationTimer.stop()
 
-        if self.evaluateSelectedBlock(False):
+        if self.isBlockEvalationOk:
             if self.filePath is not None:
                 candidateFilePath = os.path.splitext(self.filePath)[0] + '_processed.avi'
             else:
