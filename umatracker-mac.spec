@@ -4,13 +4,28 @@ import glob
 datas = [('./data', 'data'),
         ('./lib/blockly', 'lib/blockly'),
         ('./lib/closure-library', 'lib/closure-library'),
-        ('./lib/editor', 'lib/editor'),]
+        ('./lib/editor', 'lib/editor'),
+        ('./qt/mac/qt.conf', '.')]
 
-dlls = glob.glob('/usr/local/Cellar/ffms2/*/lib/libffms2.dylib')
+if os.getenv('CONDA_PREFIX'):
+    PREFIX = os.getenv('CONDA_PREFIX')
+else:
+    PREFIX = '/usr/local/Cellar/ffms2/*'
+
+ffms2_dlls = glob.glob(os.path.join(PREFIX, 'lib', 'libffms2.dylib'))
+ffmpeg_dlls = glob.glob(os.path.join(PREFIX, 'lib', 'libavresample.[0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libswscale.[0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libavutil.[0-9][0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libavcodec.[0-9][0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libavformat.[0-9][0-9].dylib'))
 
 binaries = [
     (x, 'lib')
-    for x in dlls
+    for x in ffms2_dlls
+]
+binaries += [
+    (x, '.')
+    for x in ffmpeg_dlls
 ]
 
 a = Analysis(['./main.py'],
@@ -24,6 +39,30 @@ a = Analysis(['./main.py'],
         win_no_prefer_redirects=None,
         win_private_assemblies=None,
         cipher=None)
+
+tmp = []
+
+lib_path_list = [
+        '/usr/local/Cellar/ffmpeg/',
+        '/usr/local/Cellar/x264/',
+        '/usr/local/Cellar/lame/',
+        '/usr/local/Cellar/libvo-aacenc/',
+        '/usr/local/Cellar/geos'
+        ]
+
+for lib_path in lib_path_list:
+    for dir_path, dir_names, file_names in os.walk(lib_path):
+        for file_name in file_names:
+            full_path = os.path.join(dir_path, file_name)
+            if os.path.splitext(file_name)[1]=='.dylib':
+                tmp.append(
+                        (
+                            file_name,
+                            full_path,
+                            'BINARY'
+                            )
+                        )
+a.binaries += tmp
 
 pyz = PYZ(a.pure, cipher=None)
 exe = EXE(pyz,

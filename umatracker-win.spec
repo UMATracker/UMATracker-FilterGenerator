@@ -5,7 +5,8 @@ import platform
 datas = [('./data', 'data'),
         ('./lib/blockly', 'lib/blockly'),
         ('./lib/closure-library', 'lib/closure-library'),
-        ('./lib/editor', 'lib/editor'),]
+        ('./lib/editor', 'lib/editor'),
+        ('./qt/win/qt.conf', '.')]
 
 a = Analysis(['./main.py'],
         pathex=['./'],
@@ -37,11 +38,9 @@ for dir_path, dir_names, file_names in os.walk(dll_path):
                     )
                 )
 
-# For Numpy MKL
-blacklist = ['mkl_rt.dll', 'tbb.dll', 'libmmd.dll', 'libifcoremd.dll']
-a.binaries = list(filter(lambda t:t[0] not in blacklist, a.binaries))
-numpy_dll_path = os.path.join(get_python_lib(), 'numpy', 'core')
-for dir_path, dir_names, file_names in os.walk(numpy_dll_path):
+# For conda
+conda_dll_path = os.path.join(os.environ.get('CONDA_PREFIX'), 'Library', 'bin')
+for dir_path, dir_names, file_names in os.walk(conda_dll_path):
     for file_name in file_names:
         if os.path.splitext(file_name)[1]=='.dll':
             tmp.append(
@@ -52,18 +51,35 @@ for dir_path, dir_names, file_names in os.walk(numpy_dll_path):
                         )
                     )
 
+# TODO: Check if needed
+# For Numpy MKL
+# blacklist = ['mkl_rt.dll', 'tbb.dll', 'libmmd.dll', 'libifcoremd.dll']
+# a.binaries = list(filter(lambda t:t[0] not in blacklist, a.binaries))
+# numpy_dll_path = os.path.join(get_python_lib(), 'numpy', 'core')
+# for dir_path, dir_names, file_names in os.walk(numpy_dll_path):
+#     for file_name in file_names:
+#         if os.path.splitext(file_name)[1]=='.dll':
+#             tmp.append(
+#                     (
+#                         file_name,
+#                         os.path.join(dir_path, file_name),
+#                         'BINARY'
+#                         )
+#                     )
+
+# TODO: Check if needed
 # For Numpy OpenBLAS
-numpy_dll_path = os.path.join(get_python_lib(), 'numpy', '.libs')
-for dir_path, dir_names, file_names in os.walk(numpy_dll_path):
-    for file_name in file_names:
-        if os.path.splitext(file_name)[1]=='.dll':
-            tmp.append(
-                    (
-                        file_name,
-                        os.path.join(dir_path, file_name),
-                        'BINARY'
-                        )
-                    )
+# numpy_dll_path = os.path.join(get_python_lib(), 'numpy', '.libs')
+# for dir_path, dir_names, file_names in os.walk(numpy_dll_path):
+#     for file_name in file_names:
+#         if os.path.splitext(file_name)[1]=='.dll':
+#             tmp.append(
+#                     (
+#                         file_name,
+#                         os.path.join(dir_path, file_name),
+#                         'BINARY'
+#                         )
+#                     )
 
 # For Scipy
 scipy_dll_path = os.path.join(get_python_lib(), 'scipy', 'extra-dll')
