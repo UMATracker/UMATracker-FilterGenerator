@@ -1,17 +1,38 @@
 import os
+import glob
 
 datas = [('./data', 'data'),
         ('./lib/blockly', 'lib/blockly'),
         ('./lib/closure-library', 'lib/closure-library'),
-        ('./lib/editor', 'lib/editor'),]
+        ('./lib/editor', 'lib/editor'),
+        ('./qt/mac/qt.conf', '.')]
 
-binaries = [(r'/usr/local/Cellar/ffms2/2.21/lib/libffms2.dylib', 'lib'), ]
+if os.getenv('CONDA_PREFIX'):
+    PREFIX = os.getenv('CONDA_PREFIX')
+else:
+    PREFIX = '/usr/local/Cellar/ffms2/*'
+
+ffms2_dlls = glob.glob(os.path.join(PREFIX, 'lib', 'libffms2.dylib'))
+ffmpeg_dlls = glob.glob(os.path.join(PREFIX, 'lib', 'libavresample.[0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libswscale.[0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libavutil.[0-9][0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libavcodec.[0-9][0-9].dylib'))
+ffmpeg_dlls += glob.glob(os.path.join(PREFIX, 'lib', 'libavformat.[0-9][0-9].dylib'))
+
+binaries = [
+    (x, 'lib')
+    for x in ffms2_dlls
+]
+binaries += [
+    (x, '.')
+    for x in ffmpeg_dlls
+]
 
 a = Analysis(['./main.py'],
         pathex=['./'],
         binaries=binaries,
         datas=datas,
-        hiddenimports=[],
+        hiddenimports=['fractions'],
         hookspath=None,
         runtime_hooks=None,
         excludes=None,
@@ -25,7 +46,8 @@ lib_path_list = [
         '/usr/local/Cellar/ffmpeg/',
         '/usr/local/Cellar/x264/',
         '/usr/local/Cellar/lame/',
-        '/usr/local/Cellar/libvo-aacenc/'
+        '/usr/local/Cellar/libvo-aacenc/',
+        '/usr/local/Cellar/geos'
         ]
 
 for lib_path in lib_path_list:
