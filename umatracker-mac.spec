@@ -1,6 +1,11 @@
 import os
 import glob
 
+
+DEBUG_FLAG = False
+if os.getenv('UMA_DEBUG') == 'true':
+    DEBUG_FLAG = True
+
 datas = [('./data', 'data'),
         ('./lib/blockly', 'lib/blockly'),
         ('./lib/closure-library', 'lib/closure-library'),
@@ -72,10 +77,10 @@ exe = EXE(pyz,
         a.datas,
         a.binaries,
         name='UMATracker-FilterGenerator',
-        debug=False,
+        debug=DEBUG_FLAG,
         strip=None,
         upx=True,
-        console=False, icon='./icon/icon.icns')
+        console=DEBUG_FLAG, icon='./icon/icon.icns')
 
 coll = COLLECT(exe,
         a.binaries,

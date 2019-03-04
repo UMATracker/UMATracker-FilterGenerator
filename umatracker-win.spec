@@ -2,6 +2,11 @@ import os
 from distutils.sysconfig import get_python_lib
 import platform
 
+
+DEBUG_FLAG = False
+if os.getenv('UMA_DEBUG') == 'true':
+    DEBUG_FLAG = True
+
 datas = [('./data', 'data'),
         ('./lib/blockly', 'lib/blockly'),
         ('./lib/closure-library', 'lib/closure-library'),
@@ -101,11 +106,11 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 exe = EXE(pyz,
         a.scripts,
         name='UMATracker-FilterGenerator',
-        debug=False,
+        debug=DEBUG_FLAG,
         strip=None,
         upx=True,
         exclude_binaries=True,
-        console=False, icon='./icon/icon.ico')
+        console=DEBUG_FLAG, icon='./icon/icon.ico')
 
 coll = COLLECT(exe,
         a.scripts,
@@ -113,7 +118,7 @@ coll = COLLECT(exe,
         a.zipfiles,
         a.datas,
         name='UMATracker-FilterGenerator',
-        debug=False,
+        debug=DEBUG_FLAG,
         strip=None,
         upx=True,
-        console=False, icon='./icon/icon.ico')
+        console=DEBUG_FLAG, icon='./icon/icon.ico')
